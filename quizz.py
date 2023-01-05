@@ -1,84 +1,160 @@
 from random import randint
-import re
+import os
 
-def quizz(mode):
-    global capitales, pays
-    if mode==3:
-        mode=randint(1,2)
-  
-    print(f"\nQuestion {nbr-nbrq}")
-    num_question = randint(0,len(pays)-1)
-    pays_actuel=pays[num_question]
-    capitale_actuelle=capitales[num_question]
-    pays_complet=""
-    reponse=""
 
-    resultat=re.search("(.+) \((.+)\)",pays_actuel)
-    if resultat :
-        if resultat.group(2)=="le":
-            pays_complet="du "+resultat.group(1)
-        elif resultat.group(2)=="le":
-            pays_complet="de "+resultat.group(2)+resultat.group(1)
-        else:
-            pays_complet="de "+resultat.group(2)+" "+resultat.group(1)
-  
-    if mode==1:
-        print("Quelle est la capitale",pays_complet," ?")
-        while reponse=="":
-            try:
-                reponse=input("")
-            except:
-                reponse=""
-        print("La réponse était : ",capitale_actuelle)
-        return reponse==capitale_actuelle
+def formate(ligne):
+    ligne = ligne.lower()
+    accents = { 'a': ['à', 'ã', 'á', 'â'],
+                'e': ['é', 'è', 'ê', 'ë'],
+                'i': ['î', 'ï'],
+                'u': ['ù', 'ü', 'û'],
+                'o': ['ô', 'ö'], 
+                '' : [' ', '-', '_', '\'', '(', ')', '"'] }
+    for (char, accented_chars) in accents.items():
+        for accented_char in accented_chars:
+            ligne = ligne.replace(accented_char, char)
+    return ligne
+
+
+
+def Capitales(mode, capitales, pays):
+    numQuestion = randint(0,len(pays)-1)
+    paysActuel = pays[numQuestion]
+    capitaleActuelle = capitales[numQuestion]
+    appelationPays = paysActuel
+    paysNom = ""
+    reponse = ""
+    #print(f"[DEBUG] Pays : {paysActuel}, capitale : {capitaleActuelle}")
+
+    # Recherche du pays et de la capitale
+    resultat = paysActuel.split()
+    if (len(resultat) > 1) :
+        paysNom = resultat[0]
+        paysArticle = resultat[1].replace("(", "").replace(")", "")
+        if (paysArticle == "le"): appelationPays = "du " + paysNom
+        elif (paysArticle == "les"): appelationPays = "des " + paysNom
+        elif (paysArticle == "l'"): appelationPays = "de l'" + paysNom
+        else: appelationPays = "de " + paysArticle + " " + paysNom
     else:
-        print("De quel pays",capitale_actuelle,"est la capitale ?")
-        while reponse=="":
-            try:
-                reponse=input("")
-            except:
-                reponse=""
+        paysNom = resultat[0]
+  
+    if (mode == 1):
+        while (reponse == ""):
+            reponse=input(f"Quelle est la capitale {appelationPays} ? ")
+        bravo = "Bravo" if (formate(reponse) == formate(capitaleActuelle)) else "Dommage"
+        print(f"{bravo} ! La réponse était : {capitaleActuelle}")
 
-        print("La réponse était : ",resultat.group(1))
-        return resultat.group(1)==reponse
+    if (mode == 2):
+        while (reponse == ""):
+            reponse=input(f"De quel pays {capitaleActuelle} est la capitale ? ")
+        bravo = "Bravo" if (formate(reponse) == formate(paysNom)) else "Dommage"
+        print(f"{bravo} ! La réponse était : {paysNom}")
+    
+    return bravo
 
 
-while(1):
-    #selection du mode de jeu
-    modes = [1, 2, 3]
-    print("Modes de jeu :\n1 : deviner les capitales \n2 : deviner les pays, \n3 : aléatoire")
+def Departements(mode, departement, numeros, regions):
+    numQuestion = randint(0,len(departement)-1)
+    departementActuel = departement[numQuestion]
+    numeroActuel = numeros[numQuestion]
+    regionActuelle = regions[numQuestion]
+    reponse = ""
+    #print(f"[DEBUG] Département : {departementActuel}, numéro : {numeroActuel}, région : {regionActuelle}")
+
+    if (mode == 3):
+        while (reponse == ""):
+            reponse = input(f"Quel est le numéro du département {departementActuel} ? ")
+        bravo = "Bravo" if (formate(reponse) == formate(numeroActuel)) else "Dommage"
+        print(f"{bravo} La réponse était : {numeroActuel}")
+
+    if (mode == 4):
+        while (reponse == ""):
+            reponse = input(f"Quel est le nom du département {numeroActuel} ? ")
+        bravo = "Bravo" if (formate(reponse) == formate(departementActuel)) else "Dommage"
+        print(f"{bravo} ! La réponse était : {departementActuel}")
+
+    if (mode == 5):
+        while (reponse == ""):
+            reponse = input(f"De quelle région est {departementActuel} ({numeroActuel}) ? ")
+        bravo = "Bravo" if (formate(reponse) == formate(regionActuelle)) else "Dommage"
+        print(f"{bravo} La réponse était : {regionActuelle}")
+    
+    return bravo
+
+
+modes = [1, 2, 3, 4, 5, 6]
+while(True):
+    os.system("cls")
+    points=0
     mode = 0
+
+    #selection du mode de jeu
+    print("Modes de jeu (0 pour quitter) :\n1 : deviner les capitales\n2 : deviner les pays\n3 : deviner les départements\n4 : deviner les numéros\n5 : deviner les régions\n6 : aléatoire")
     while not(mode in modes):
         try:
-            mode=int(input("Mode de jeu : "))
-            if (mode == 0):
-                exit()
-        except:
+            mode=int(input("\nChoisissez votre mode de jeu : "))
+        except ValueError:
             print("Mode de jeu incorrect")
+        
+        if (mode == 0):
+            exit()
 
-    #Initialisation des listes
-    pays=[]
-    capitales=[]
-    with open("capitales.txt", "r") as fd:
-        for ligne in fd:
-            mots=ligne.split(",")
-            pays.append(mots[0])
-            capitales.append(mots[1].strip())
-
-            
+    random = False
+    if mode == 6:
+        random = True
+    
 
     #Nombres des questions
-    nbr=int(input("Nombre de questions (0 pour quitter) : "))
-    nbrq=nbr
+    nbrQuestions = 0
+    while (nbrQuestions < 1):
+        try:
+            nbrQuestions=int(input("Nombre de questions : "))
+        except ValueError:
+            print("Nombre de questions incorrect")
 
-    #Quizz pour le nombre de question
-    pts=0
-    while nbrq>0:
-        nbrq-=1
-        if quizz(mode):
-            #si bonne réponse : +1pts
-            pts+=1
+
+    #Récupération des données
+    if mode in [1, 2, 6]:
+        pays=[]
+        capitales=[]
+        with open("capitales.txt", "r", encoding='utf8') as fd:
+            for ligne in fd:
+                mots=ligne.split(",")
+                pays.append(mots[0])
+                capitales.append(mots[1].strip())
+
+    if mode in [3, 4, 5, 6]:
+        numeros = []
+        departements = []
+        regions = []
+        with open("departements.txt", "r", encoding='utf8') as fd:
+            for ligne in fd:
+                ligne=ligne.split(",")
+                numeros.append(ligne[0].strip())
+                departements.append(ligne[1].strip())
+                regions.append(ligne[3].strip())
+
+
+
+    #Quizz
+    numQuestion = 1
+    while (numQuestion <= nbrQuestions):
+        print(f"\nQuestion {numQuestion}")
+
+        if random:
+            mode = randint(1, 5)
+
+        if mode in [1, 2]:
+            reponse = Capitales(mode, capitales, pays)
+        if mode in [3, 4, 5]:
+            reponse = Departements(mode, departements, numeros, regions)
+
+        if (reponse == "Bravo"):
+            points += 1
+
+        numQuestion += 1
 
 
     #Affichage du score
-    print("\n\nScore : ",pts,"/",nbr)
+    print(f"\n\nScore : {points}/{nbrQuestions}")
+    input("Appuyez sur une touche pour continuer")
