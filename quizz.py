@@ -89,7 +89,12 @@ while(True):
     mode = 0
 
     #selection du mode de jeu
-    print("Modes de jeu (0 pour quitter) :\n1 : deviner les capitales\n2 : deviner les pays\n3 : deviner les départements\n4 : deviner les numéros\n5 : deviner les régions\n6 : aléatoire")
+    print("Modes de jeu (0 pour quitter) :")
+    print("1 : deviner les capitales")
+    print("2 : deviner les pays")
+    print("3 : deviner les numéros des départements")
+    print("4 : deviner les noms des département")
+    print("5 : deviner les régions des départements\n6 : aléatoire")
     while not(mode in modes):
         try:
             mode=int(input("\nChoisissez votre mode de jeu : "))
